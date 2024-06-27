@@ -35,7 +35,7 @@ const emitEvent = (req, event, users, data) => {
   io.to(usersSocket).emit(event, data);
 };
 
-const uploadFilesToCloudinary = async (files = []) => {
+const uploadFilesToCloudinary = async (files = [], folder) => {
     const uploadPromises = files.map((file) => {
       return new Promise((resolve, reject) => {
         cloudinary.uploader.upload(
@@ -43,6 +43,7 @@ const uploadFilesToCloudinary = async (files = []) => {
           {
             resource_type: "auto",
             public_id: uuid(),
+            folder: `chat-app/${folder}`
           },
           (error, result) => {
             if (error) return reject(error);
@@ -66,7 +67,20 @@ const uploadFilesToCloudinary = async (files = []) => {
   };
 
 const deleteFilesFromCloudinary = async (public_ids) => {
+  const deletePromises = public_ids.map((id) => {
+    return new Promise((resolve, reject) => {
+      cloudinary.uploader.destroy(id, (error, result) => {
+        if (error) return reject(error);
+        resolve(result);
+      });
+    });
+  });
 
+  try {
+    await Promise.all(deletePromises);
+  } catch (err) {
+    throw new Error("Error deleting files from cloudinary", err);
+  }
 };
 
 
