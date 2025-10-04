@@ -1,22 +1,22 @@
 import express from 'express';
-import { connectDB } from '../utils/features.js';
+import { connectDB } from './utils/features.js';
 import  dotenv  from 'dotenv';
-import { errorMiddleware } from '../middlewares/error.js';
+import { errorMiddleware } from './middlewares/error.js';
 import cookieParser from 'cookie-parser';
 import { Server } from 'socket.io';
 import { createServer } from 'http';
 import { v4 as uuid } from 'uuid';
 import cors from 'cors';
 import { v2 as cloudinary } from 'cloudinary';
-import { CHAT_JOINED, CHAT_LEAVED, NEW_MESSAGE, NEW_MESSAGE_ALERT, ONLINE_USERS, START_TYPING, STOP_TYPING } from '../constants/events.js';
-import { getSockets } from '../lib/helper.js';
-import { Message } from '../models/message.js';
-import { corsOptions } from '../constants/config.js';
-import { socketAuthenticator } from '../middlewares/auth.js';
+import { CHAT_JOINED, CHAT_LEAVED, NEW_MESSAGE, NEW_MESSAGE_ALERT, ONLINE_USERS, START_TYPING, STOP_TYPING } from './constants/events.js';
+import { getSockets } from './lib/helper.js';
+import { Message } from './models/message.js';
+import { corsOptions } from './constants/config.js';
+import { socketAuthenticator } from './middlewares/auth.js';
 
-import userRoute from '../routes/user.js';
-import chatRoute from '../routes/chat.js';
-import adminRoute from '../routes/admin.js';
+import userRoute from './routes/user.js';
+import chatRoute from './routes/chat.js';
+import adminRoute from './routes/admin.js';
 
 
 dotenv.config({ path: './.env' });
@@ -144,6 +144,11 @@ io.on("connection", (socket) => {
     });
 });
 
+// Health route to check uptime
+app.get("/health", (req, res) => {
+  res.status(200).send("OK");
+});
+
 
 
 
@@ -151,6 +156,15 @@ app.use(errorMiddleware);
 
 server.listen(port, () => {
   console.log(`Server is running on port ${port} in ${envMode} Mode`);
+
+    // Keep alive: ping itself every 14 minutes (Render sleeps after 15)
+    setInterval(() => {
+      const url = `http://localhost:3000//health`;
+      fetch(url)
+        .then(() => console.log("Self-ping successful"))
+        .catch((err) => console.error("Self-ping failed:", err));
+    }, 10 * 60 * 1000); // 14 minutes
+
 });
 
 export { envMode, adminSecretKey, userSocketIDs };
