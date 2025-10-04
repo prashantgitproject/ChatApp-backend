@@ -1,4 +1,4 @@
-import { adminSecretKey } from "../index.js";
+import { adminSecretKey } from "../app.js";
 // import { adminSecretKey } from "../index.js";
 import { ErrorHandler } from "../utils/utility.js";
 import jwt from 'jsonwebtoken';

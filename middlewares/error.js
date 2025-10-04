@@ -1,4 +1,4 @@
-import { envMode } from "../index.js";
+import { envMode } from "../app.js";
 // import { envMode } from "../index.js";
 
 const errorMiddleware = (err, req, res, next) => {
